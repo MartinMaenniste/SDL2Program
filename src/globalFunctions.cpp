@@ -11,8 +11,8 @@ void printDebug(int *logLevel, int *messageDepth, const char *message)
 {
     if ((*logLevel) > 0)
     {
-        printCharNTimes(messageDepth, "-");
-        printf(">");
+        printCharNTimes(messageDepth, "==");
+        printf("> ");
         printf(message);
     }
 }
@@ -21,8 +21,8 @@ void printInfo(int *logLevel, int *messageDepth, const char *message)
 
     if ((*logLevel) > 1)
     {
-        printCharNTimes(messageDepth, "-");
-        printf(">");
+        printCharNTimes(messageDepth, "==");
+        printf("> ");
         printf(message);
     }
 }

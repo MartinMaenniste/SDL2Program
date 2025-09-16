@@ -2,7 +2,6 @@
 
 int main()
 {
-
     Game game = Game();
     int messageDepth = 0;
     int logLevel = 2; // 0 - show nothing; 1 - show debug (errors); 2 - show debug + general info about what is currently going on
@@ -20,7 +19,7 @@ int main()
 
     printInfo(&logLevel, &messageDepth, "Loading media...\n");
     messageDepth++;
-    if (!game.loadMedia(&logLevel, &messageDepth))
+    if (!game.loadAssets(&logLevel, &messageDepth))
     {
         printDebug(&logLevel, &messageDepth, "Failed to load media!\nQuitting program.\n");
         return 0;
@@ -28,6 +27,7 @@ int main()
     messageDepth--;
     printInfo(&logLevel, &messageDepth, "Media loaded.\n");
 
+    game.start();
     printInfo(&logLevel, &messageDepth, "Game started!\n");
     while (game.isRunning())
     {
@@ -40,6 +40,7 @@ int main()
                 game.quitPressed();
             }
         }
+        game.render();
     }
     printDebug(&logLevel, &messageDepth, "Quitting program...\n"); // If program didn't crash, but something ended game loop unexpectedly - debug rather than just info
     messageDepth++;

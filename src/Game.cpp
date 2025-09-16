@@ -2,13 +2,64 @@
 
 Game::Game()
 {
-    mIsrunning = true;
+    mIsrunning = false;
     mWindow = std::make_unique<Window>();
 }
 Game::~Game()
 {
 }
-bool Game::init(int *logLevel, int *messageDepth)
+bool Game::init(int *logLevel, int *messageDepth) // Basically make a functioning window on the screen.
+{
+
+    if (!initSDL(logLevel, messageDepth))
+    {
+        return false;
+    }
+
+    if (!initWindow(logLevel, messageDepth))
+    {
+        return false;
+    }
+
+    return true;
+}
+bool Game::loadAssets(int *logLevel, int *messageDepth)
+{
+    if (!loadPlayerAssets(logLevel, messageDepth))
+    {
+        return false;
+    }
+    return true;
+}
+void Game::start()
+{
+    mIsrunning = true;
+}
+void Game::render()
+{
+    SDL_RenderClear(mWindow->getRenderer());
+    mPlayer->render(mWindow->getRenderer());
+    SDL_RenderPresent(mWindow->getRenderer());
+}
+
+void Game::close(int *logLevel, int *messageDepth)
+{
+    printInfo(logLevel, messageDepth, "Quitting SDL...\n");
+    SDL_Quit();
+    printInfo(logLevel, messageDepth, "Success.\n");
+    mWindow->close(logLevel, messageDepth);
+    mPlayer->close(logLevel, messageDepth);
+}
+bool Game::isRunning()
+{
+    return mIsrunning;
+}
+void Game::quitPressed()
+{
+    mIsrunning = false;
+}
+
+bool Game::initSDL(int *logLevel, int *messageDepth)
 {
     printInfo(logLevel, messageDepth, "Initialising SDL...\n");
     (*messageDepth)++;
@@ -21,10 +72,14 @@ bool Game::init(int *logLevel, int *messageDepth)
         }
         return false;
     }
-    printInfo(logLevel, messageDepth, "Video initialised.\n");
+    printInfo(logLevel, messageDepth, "SDL video initialised.\n");
     (*messageDepth)--;
     printInfo(logLevel, messageDepth, "SDL initialised.\n");
 
+    return true;
+}
+bool Game::initWindow(int *logLevel, int *messageDepth)
+{
     printInfo(logLevel, messageDepth, "Initialising window.\n");
     (*messageDepth)++;
     if (!mWindow->init(logLevel, messageDepth))
@@ -37,28 +92,15 @@ bool Game::init(int *logLevel, int *messageDepth)
 
     return true;
 }
-bool Game::loadMedia(int *logLevel, int *messageDepth)
+bool Game::loadPlayerAssets(int *logLevel, int *messageDepth)
 {
-    return true;
-}
-void Game::start()
-{
-}
-void Game::close(int *logLevel, int *messageDepth)
-{
-    printInfo(logLevel, messageDepth, "Quitting SDL...\n");
-    SDL_Quit();
-    printInfo(logLevel, messageDepth, "Success.\n");
+    printInfo(logLevel, messageDepth, "Loading Player class assets...\n");
+    (*messageDepth)++;
 
-    printDebug(logLevel, messageDepth, "Destroying application window...\n");
-    mWindow->close();
-    printInfo(logLevel, messageDepth, "Success.\n");
-}
-bool Game::isRunning()
-{
-    return mIsrunning;
-}
-void Game::quitPressed()
-{
-    mIsrunning = false;
+    mPlayer = std::make_unique<Player>(mWindow->getWidth() / 2 - 50, mWindow->getHeight() / 2 - 50, 100, 100);
+    mPlayer->loadAssets(mWindow->getRenderer(), logLevel, messageDepth);
+
+    (*messageDepth)--;
+    printInfo(logLevel, messageDepth, "Player class assets made.\n");
+    return true;
 }

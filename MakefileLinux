@@ -1,6 +1,6 @@
 COMPILER = g++
 OBJECTFLAGS = -std=c++17
-LINKERFLAGS = -lSDL2
+LINKERFLAGS = -lSDL2 -lSDL2_image
 
 SRC = $(wildcard src/*.cpp)
 OBJ = $(patsubst src/%.cpp, build/%.o, $(SRC))
