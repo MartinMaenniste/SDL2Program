@@ -1,0 +1,23 @@
+COMPILER = g++
+OBJECTFLAGS = -std=c++17
+LINKERFLAGS = -lSDL2
+
+SRC = $(wildcard src/*.cpp)
+OBJ = $(patsubst src/%.cpp, build/%.o, $(SRC))
+BIN = bin/game
+
+all: $(BIN)
+
+$(BIN): $(OBJ)
+	@mkdir -p bin
+	$(COMPILER) -o $@ $^ $(LINKERFLAGS)
+
+build/%.o: src/%.cpp
+	@mkdir -p build
+	$(COMPILER) $(OBJECTFLAGS) -c $< -o $@
+
+run: $(BIN)
+	./$(BIN)
+
+clean:
+	rm -rf build bin
