@@ -1,8 +1,8 @@
 #include "Texture.h"
 
-Texture::Texture(const char *pathToImage)
+Texture::Texture()
 {
-    mImagePath = pathToImage;
+    mImagePath = nullptr;
     mTexture = NULL;
     mTextureWidth = 0;
     mTextureHeight = 0;
@@ -11,7 +11,7 @@ Texture::~Texture()
 {
 }
 
-bool Texture::loadTexture(SDL_Renderer *renderer, int width, int height, int *logLevel, int *messageDepth)
+bool Texture::loadTextureFromPath(const char *pathToImage, SDL_Renderer *renderer, int width, int height, int *logLevel, int *messageDepth)
 {
     mTextureWidth = width;
     mTextureHeight = height;
@@ -22,6 +22,23 @@ bool Texture::loadTexture(SDL_Renderer *renderer, int width, int height, int *lo
         if ((*logLevel) > 0)
         {
             printf("%s\n", IMG_GetError());
+        }
+        return false;
+    }
+    return true;
+}
+bool Texture::loadTextureFromSurface(const char *pathToImage, SDL_Surface *surface, SDL_Renderer *renderer, int width, int height, int *logLevel, int *messageDepth)
+{
+    mTextureWidth = width;
+    mTextureHeight = height;
+    mImagePath = pathToImage;
+    mTexture = SDL_CreateTextureFromSurface(renderer, surface);
+    if (mTexture == NULL)
+    {
+        printDebug(logLevel, messageDepth, "Could not create texture from surface: ");
+        if ((*logLevel) > 0)
+        {
+            printf("%s\n", SDL_GetError());
         }
         return false;
     }

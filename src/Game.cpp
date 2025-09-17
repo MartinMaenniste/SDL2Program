@@ -35,10 +35,18 @@ void Game::start()
 {
     mIsrunning = true;
 }
+void Game::handleEvents(SDL_Event &event)
+{
+    if (event.type == SDL_QUIT)
+    {
+        mIsrunning = false;
+    }
+    mPlayer->handleEvents(event);
+}
 void Game::render()
 {
     SDL_RenderClear(mWindow->getRenderer());
-    mPlayer->render(mWindow->getRenderer());
+    mPlayer->render(mWindow);
     SDL_RenderPresent(mWindow->getRenderer());
 }
 
@@ -97,7 +105,7 @@ bool Game::loadPlayerAssets(int *logLevel, int *messageDepth)
     printInfo(logLevel, messageDepth, "Loading Player class assets...\n");
     (*messageDepth)++;
 
-    mPlayer = std::make_unique<Player>(mWindow->getWidth() / 2 - 50, mWindow->getHeight() / 2 - 50, 100, 100);
+    mPlayer = std::make_unique<Player>(mWindow->getWidth() / 2 - 25, mWindow->getHeight() / 2 - 25, 50, 50);
     mPlayer->loadAssets(mWindow->getRenderer(), logLevel, messageDepth);
 
     (*messageDepth)--;

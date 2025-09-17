@@ -1,5 +1,4 @@
 #include "globalFunctions.h"
-#include "Window.h"
 #include "Player.h"
 
 class Game
@@ -11,6 +10,7 @@ public:
     bool init(int *logLevel, int *messageDepth);
     bool loadAssets(int *logLevel, int *messageDepth);
     void start();
+    void handleEvents(SDL_Event &event);
     void render();
     void close(int *logLevel, int *messageDepth);
     bool isRunning();
