@@ -7,7 +7,9 @@ Player::Player()
     mPosY = 0;
     mWidth = 0;
     mHeight = 0;
-    mPlayerSpeed = 0;
+    mPlayerSpeedMAX = 0;
+    mPlayerAcceleration = 0;
+    mTexture = std::make_unique<Texture>();
 }
 Player::Player(int startX, int startY, int width, int height)
 {
@@ -16,7 +18,9 @@ Player::Player(int startX, int startY, int width, int height)
     mPosY = startY;
     mWidth = width;
     mHeight = height;
-    mPlayerSpeed = 10; // TODO - make a better system
+    mPlayerSpeedMAX = 10; // TODO - make a better system
+    mPlayerAcceleration = 1;
+    mTexture = std::make_unique<Texture>();
 }
 Player::~Player()
 {
@@ -45,7 +49,6 @@ bool Player::loadAssets(SDL_Renderer *renderer, int *logLevel, int *messageDepth
 
     printInfo(logLevel, messageDepth, "Making player texture...\n");
     (*messageDepth)++;
-    mTexture = std::make_unique<Texture>();
     mTexture->loadTextureFromSurface(mImagePath, imageSurface, renderer, mWidth, mHeight, logLevel, messageDepth);
     if (mTexture == NULL)
     {
@@ -69,16 +72,16 @@ void Player::handleEvents(SDL_Event &event)
         switch (event.key.keysym.sym)
         {
         case SDLK_w:
-            mVelY -= mPlayerSpeed;
+            mYMotion -= 1;
             break;
         case SDLK_s:
-            mVelY += mPlayerSpeed;
+            mYMotion += 1;
             break;
         case SDLK_a:
-            mVelX -= mPlayerSpeed;
+            mXMotion -= 1;
             break;
         case SDLK_d:
-            mVelX += mPlayerSpeed;
+            mXMotion += 1;
             break;
 
         default:
@@ -90,16 +93,16 @@ void Player::handleEvents(SDL_Event &event)
         switch (event.key.keysym.sym)
         {
         case SDLK_w:
-            mVelY += mPlayerSpeed;
+            mYMotion += 1;
             break;
         case SDLK_s:
-            mVelY -= mPlayerSpeed;
+            mYMotion -= 1;
             break;
         case SDLK_a:
-            mVelX += mPlayerSpeed;
+            mXMotion += 1;
             break;
         case SDLK_d:
-            mVelX -= mPlayerSpeed;
+            mXMotion -= 1;
             break;
 
         default:
@@ -107,10 +110,14 @@ void Player::handleEvents(SDL_Event &event)
         }
     }
 }
-void Player::render(std::unique_ptr<Window> &window)
+void Player::move(int &levelWidth, int &levelHeight)
 {
-    movePlayerSprite(window->getWidth(), window->getHeight());
-    mTexture->render(window->getRenderer(), mPosX, mPosY);
+    updateVelocity();
+    updatePos(levelWidth, levelHeight);
+}
+void Player::render(std::unique_ptr<Window> &window, int cameraX, int cameraY)
+{
+    mTexture->render(window->getRenderer(), mPosX - cameraX, mPosY - cameraY);
 }
 void Player::close(int *logLevel, int *messageDepth)
 {
@@ -122,8 +129,69 @@ void Player::close(int *logLevel, int *messageDepth)
 }
 int Player::getXPosition() { return mPosX; }
 int Player::getYPosition() { return mPosY; }
+int Player::getWidth() { return mWidth; }
+int Player::getHeight() { return mHeight; }
 
-void Player::movePlayerSprite(int windowWidth, int windowHeight)
+void Player::updateVelocity()
+{
+    updateXVelocity();
+    updateYVelocity();
+}
+void Player::updateXVelocity()
+{
+    if (mXMotion == 0)
+    {
+        // If the player should be stationary, slow player down
+        if (abs(mVelX) == 1 || abs(mVelX) == 0)
+            mVelX = 0;
+        else
+            mVelX > 0 ? mVelX -= mPlayerAcceleration : mVelX += mPlayerAcceleration;
+    }
+    else
+    {
+        // Otherwise speed up, player should be moving in mXMotion's direction
+        mVelX += mXMotion * mPlayerAcceleration;
+    }
+
+    // Make sure to cap speed!
+
+    if (mVelX > mPlayerSpeedMAX)
+    {
+        mVelX = mPlayerSpeedMAX;
+    }
+    else if (mVelX < -1 * mPlayerSpeedMAX)
+    {
+        mVelX = -1 * mPlayerSpeedMAX;
+    }
+}
+void Player::updateYVelocity()
+{
+    if (mYMotion == 0)
+    {
+        // If the player should be stationary, slow player down
+        if (abs(mVelY) == 1 || abs(mVelY) == 0)
+            mVelY = 0;
+        else
+            mVelY > 0 ? mVelY -= mPlayerAcceleration : mVelY += mPlayerAcceleration;
+    }
+    else
+    {
+        // Otherwise speed up, player should be moving in mYMotion's direction
+        mVelY += mYMotion * mPlayerAcceleration;
+    }
+
+    // Make sure to cap speed!
+
+    if (mVelY > mPlayerSpeedMAX)
+    {
+        mVelY = mPlayerSpeedMAX;
+    }
+    else if (mVelY < -1 * mPlayerSpeedMAX)
+    {
+        mVelY = -1 * mPlayerSpeedMAX;
+    }
+}
+void Player::updatePos(int &levelWidth, int &levelHeight)
 {
     mPosX += mVelX;
     mPosY += mVelY;
@@ -132,17 +200,17 @@ void Player::movePlayerSprite(int windowWidth, int windowHeight)
     {
         mPosX = 0;
     }
-    else if (mPosX + mWidth > windowWidth)
+    else if (mPosX + mWidth > levelWidth)
     {
-        mPosX = windowWidth - mWidth;
+        mPosX = levelWidth - mWidth;
     }
 
     if (mPosY < 0)
     {
         mPosY = 0;
     }
-    else if (mPosY + mHeight > windowHeight)
+    else if (mPosY + mHeight > levelHeight)
     {
-        mPosY = windowHeight - mHeight;
+        mPosY = levelHeight - mHeight;
     }
 }

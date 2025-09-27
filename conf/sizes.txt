@@ -1,0 +1,17 @@
+1280
+720
+32
+60
+100
+3840
+2160
+
+
+1: Default window width
+2: Default window height
+3: Tile sidelength
+4: Player width
+5: Player height
+Start with default level. Dimensions of the level:
+6: Level width
+7: Level height

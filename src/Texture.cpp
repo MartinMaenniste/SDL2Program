@@ -15,6 +15,8 @@ bool Texture::loadTextureFromPath(const char *pathToImage, SDL_Renderer *rendere
 {
     mTextureWidth = width;
     mTextureHeight = height;
+    mImagePath = pathToImage;
+
     mTexture = IMG_LoadTexture(renderer, mImagePath);
     if (mTexture == NULL)
     {

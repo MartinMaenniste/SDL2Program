@@ -1,13 +1,14 @@
-#include "globalFunctions.h"
+#pragma once
+
+#include "GlobalFunctions.h"
 
 class Window
 {
 public:
     Window();
-    Window(int width, int height);
     ~Window();
 
-    bool init(int *logLevel, int *messageDepth);
+    bool init(int *logLevel, int *messageDepth, int defaultWindowWidth, int defaultWindowHeight);
     void close(int *logLevel, int *messageDepth);
     SDL_Renderer *getRenderer();
     int getWidth();
@@ -16,10 +17,8 @@ public:
 private:
     SDL_Window *mWindow;
     SDL_Renderer *mRenderer;
-    int mWindowWidth;
-    int mWindowHeight;
+    int mWindowWidth, mWindowHeight;
 
-    void getWindowDimensions(int *logLevel, int *messageDepth);
     bool createWindow(int *logLevel, int *messageDepth);
     bool createRenderer(int *logLevel, int *messageDepth);
     bool initialisePNGLoading(int *logLevel, int *messageDepth);

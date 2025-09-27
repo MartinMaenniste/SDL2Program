@@ -1,4 +1,4 @@
-#include "globalFunctions.h"
+#include "GlobalFunctions.h"
 
 void printCharNTimes(int *n, const char *c)
 {

@@ -4,7 +4,13 @@ GameController::GameController()
 {
     Game mGame = Game();
     mMessageDepth = 0;
-    mLogLevel = 2; // TODO - change to a better system.
+    mLogLevel = 0;
+}
+GameController::GameController(char *logLevel)
+{
+    Game mGame = Game();
+    mMessageDepth = 0;
+    mLogLevel = std::atoi(logLevel);
 }
 GameController::~GameController()
 {
@@ -12,8 +18,6 @@ GameController::~GameController()
 void GameController::startApplication()
 {
     if (!initGame())
-        return;
-    if (!loadAssets())
         return;
     startGame();
     closeGame();
@@ -31,19 +35,6 @@ bool GameController::initGame()
     }
     mMessageDepth--;
     printInfo(&mLogLevel, &mMessageDepth, "Program initialised.\n");
-    return true;
-}
-bool GameController::loadAssets()
-{
-    printInfo(&mLogLevel, &mMessageDepth, "Loading assets...\n");
-    mMessageDepth++;
-    if (!mGame.loadAssets(&mLogLevel, &mMessageDepth))
-    {
-        printDebug(&mLogLevel, &mMessageDepth, "Failed to load assets!\nQuitting program.\n");
-        return false;
-    }
-    mMessageDepth--;
-    printInfo(&mLogLevel, &mMessageDepth, "Assets loaded.\n");
     return true;
 }
 void GameController::startGame()
@@ -73,6 +64,7 @@ void GameController::startGame()
         {
             mGame.handleEvents(event);
         }
+        mGame.updatePositions();
         mGame.render();
 
         frameEndTime = SDL_GetTicks64();
@@ -84,6 +76,7 @@ void GameController::startGame()
         }
         totalFrames++;
         averageFPS = totalFrames / (runningTime / 1000.0f);
+        // No font system made yet, can't yet display.
     }
 }
 void GameController::closeGame()

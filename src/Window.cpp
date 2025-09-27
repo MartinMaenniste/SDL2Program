@@ -7,19 +7,13 @@ Window::Window()
     mWindowWidth = 0;
     mWindowHeight = 0;
 }
-Window::Window(int width, int height)
-{ // Currently not in use!
-    mWindow = NULL;
-    mRenderer = NULL;
-    mWindowWidth = width;
-    mWindowHeight = height;
-}
 Window::~Window()
 {
 }
-bool Window::init(int *logLevel, int *messageDepth)
+bool Window::init(int *logLevel, int *messageDepth, int defaultWindowWidth, int defaultWindowHeight)
 {
-    getWindowDimensions(logLevel, messageDepth);
+    mWindowWidth = defaultWindowWidth;
+    mWindowHeight = defaultWindowHeight;
 
     if (!createWindow(logLevel, messageDepth))
     {
@@ -46,25 +40,6 @@ void Window::close(int *logLevel, int *messageDepth)
     printInfo(logLevel, messageDepth, "Destroying window...\n");
     SDL_DestroyWindow(mWindow);
     printInfo(logLevel, messageDepth, "Window destroyed.\n");
-}
-
-void Window::getWindowDimensions(int *logLevel, int *messageDepth)
-{
-    while (mWindowWidth < 10 || mWindowHeight < 10)
-    {
-        printf("\n***\n\n");
-        while (mWindowWidth < 10)
-        {
-            printf("Enter preferred window width (min 10): ");
-            scanf("%d", &mWindowWidth); // TODO - Non-numbers break the simple implementation
-        }
-        while (mWindowHeight < 10)
-        {
-            printf("Enter preferred window height (min 10): ");
-            scanf("%d", &mWindowHeight); // TODO - Non-numbers break the simple implementation
-        }
-        printf("\n\n***\n\n");
-    }
 }
 SDL_Renderer *Window::getRenderer() { return mRenderer; }
 int Window::getWidth() { return mWindowWidth; }

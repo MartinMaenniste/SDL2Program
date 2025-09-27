@@ -1,4 +1,6 @@
-#include "globalFunctions.h"
+#pragma once
+
+#include "GlobalFunctions.h"
 
 class Texture
 {

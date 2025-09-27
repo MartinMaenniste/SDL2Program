@@ -1,9 +1,13 @@
+#pragma once
+
 #include "Game.h"
+#include "GlobalFunctions.h"
 
 class GameController
 {
 public:
     GameController();
+    GameController(char *logLevel);
     ~GameController();
 
     void startApplication();

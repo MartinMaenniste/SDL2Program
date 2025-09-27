@@ -6,6 +6,8 @@ SRC = $(wildcard src/*.cpp)
 OBJ = $(patsubst src/%.cpp, build/%.o, $(SRC))
 BIN = bin/game
 
+ARGS ?= 0
+
 all: $(BIN)
 
 $(BIN): $(OBJ)
@@ -17,7 +19,7 @@ build/%.o: src/%.cpp
 	$(COMPILER) $(OBJECTFLAGS) -c $< -o $@
 
 run: $(BIN)
-	./$(BIN)
+	./$(BIN) $(ARGS)
 
 clean:
 	rm -rf build bin
