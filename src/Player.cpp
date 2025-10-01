@@ -3,23 +3,21 @@
 Player::Player()
 {
     mTexture = NULL;
-    mPosX = 0;
-    mPosY = 0;
-    mWidth = 0;
-    mHeight = 0;
     mPlayerSpeedMAX = 0;
     mPlayerAcceleration = 0;
     mTexture = std::make_unique<Texture>();
+    mHitbox = {0, 0, 0, 0};
 }
 Player::Player(int startX, int startY, int width, int height)
 {
     mTexture = NULL;
-    mPosX = startX;
-    mPosY = startY;
-    mWidth = width;
-    mHeight = height;
+    mHitbox = {startX, startY, width, height};
     mPlayerSpeedMAX = 10; // TODO - make a better system
     mPlayerAcceleration = 1;
+    mVelX = 0;
+    mVelY = 0;
+    mXMotion = 0;
+    mYMotion = 0;
     mTexture = std::make_unique<Texture>();
 }
 Player::~Player()
@@ -49,7 +47,7 @@ bool Player::loadAssets(SDL_Renderer *renderer, int *logLevel, int *messageDepth
 
     printInfo(logLevel, messageDepth, "Making player texture...\n");
     (*messageDepth)++;
-    mTexture->loadTextureFromSurface(mImagePath, imageSurface, renderer, mWidth, mHeight, logLevel, messageDepth);
+    mTexture->loadTextureFromSurface(mImagePath, imageSurface, renderer, mHitbox.w, mHitbox.h, logLevel, messageDepth);
     if (mTexture == NULL)
     {
         printDebug(logLevel, messageDepth, "Failed to create player texture.\n");
@@ -110,14 +108,14 @@ void Player::handleEvents(SDL_Event &event)
         }
     }
 }
-void Player::move(int &levelWidth, int &levelHeight)
+void Player::move(int &levelWidth, int &levelHeight, const std::vector<Tile> &tiles, int tileTexSize)
 {
     updateVelocity();
-    updatePos(levelWidth, levelHeight);
+    updatePos(levelWidth, levelHeight, tiles);
 }
 void Player::render(std::unique_ptr<Window> &window, int cameraX, int cameraY)
 {
-    mTexture->render(window->getRenderer(), mPosX - cameraX, mPosY - cameraY);
+    mTexture->render(window->getRenderer(), mHitbox.x - cameraX, mHitbox.y - cameraY);
 }
 void Player::close(int *logLevel, int *messageDepth)
 {
@@ -127,10 +125,10 @@ void Player::close(int *logLevel, int *messageDepth)
     (*messageDepth)--;
     printInfo(logLevel, messageDepth, "Player closed.\n");
 }
-int Player::getXPosition() { return mPosX; }
-int Player::getYPosition() { return mPosY; }
-int Player::getWidth() { return mWidth; }
-int Player::getHeight() { return mHeight; }
+int Player::getXPosition() { return mHitbox.x; }
+int Player::getYPosition() { return mHitbox.y; }
+int Player::getWidth() { return mHitbox.w; }
+int Player::getHeight() { return mHitbox.h; }
 
 void Player::updateVelocity()
 {
@@ -139,18 +137,16 @@ void Player::updateVelocity()
 }
 void Player::updateXVelocity()
 {
+
     if (mXMotion == 0)
     {
-        // If the player should be stationary, slow player down
-        if (abs(mVelX) == 1 || abs(mVelX) == 0)
-            mVelX = 0;
-        else
-            mVelX > 0 ? mVelX -= mPlayerAcceleration : mVelX += mPlayerAcceleration;
+        // If the player should be stationary, slow player down.
+        mVelX = deceleratePlayer(mVelX);
     }
     else
     {
         // Otherwise speed up, player should be moving in mXMotion's direction
-        mVelX += mXMotion * mPlayerAcceleration;
+        mVelX = acceleratePlayer(mVelX, mXMotion);
     }
 
     // Make sure to cap speed!
@@ -166,18 +162,16 @@ void Player::updateXVelocity()
 }
 void Player::updateYVelocity()
 {
+
     if (mYMotion == 0)
     {
         // If the player should be stationary, slow player down
-        if (abs(mVelY) == 1 || abs(mVelY) == 0)
-            mVelY = 0;
-        else
-            mVelY > 0 ? mVelY -= mPlayerAcceleration : mVelY += mPlayerAcceleration;
+        mVelY = deceleratePlayer(mVelY);
     }
     else
     {
         // Otherwise speed up, player should be moving in mYMotion's direction
-        mVelY += mYMotion * mPlayerAcceleration;
+        mVelY = acceleratePlayer(mVelY, mYMotion);
     }
 
     // Make sure to cap speed!
@@ -191,26 +185,94 @@ void Player::updateYVelocity()
         mVelY = -1 * mPlayerSpeedMAX;
     }
 }
-void Player::updatePos(int &levelWidth, int &levelHeight)
+int Player::acceleratePlayer(int velocity, int direction)
 {
-    mPosX += mVelX;
-    mPosY += mVelY;
+    velocity += direction * mPlayerAcceleration;
+    return velocity;
+}
+int Player::deceleratePlayer(int velocity)
+{
+    if (abs(velocity) == 1 || abs(velocity) == 0) // If player is moving only slightly, stop. If already stopped, keep the velocity at 0
+        velocity = 0;
+    else
+        velocity > 0 ? velocity -= mPlayerAcceleration : velocity += mPlayerAcceleration;
 
-    if (mPosX < 0)
+    return velocity;
+}
+void Player::updatePos(int &levelWidth, int &levelHeight, const std::vector<Tile> &tiles)
+{
+    // Check if moving x makes a collision with tiles, check if moving y makes a collision with tiles.
+    // For both of them, snap to the tile, then skip (or recursion if there is an odd case.)
+    // After that, correctforlevel.
+
+    mHitbox.x += mVelX;
+    correctForTilesX(tiles);
+    mHitbox.y += mVelY;
+    correctForTilesY(tiles);
+
+    correctForLevel(levelWidth, levelHeight);
+}
+void Player::correctForLevel(int &levelWidth, int &levelHeight)
+{
+    if (mHitbox.x < 0)
     {
-        mPosX = 0;
+        mHitbox.x = 0;
     }
-    else if (mPosX + mWidth > levelWidth)
+    else if (mHitbox.x + mHitbox.w > levelWidth)
     {
-        mPosX = levelWidth - mWidth;
+        mHitbox.x = levelWidth - mHitbox.w;
     }
 
-    if (mPosY < 0)
+    if (mHitbox.y < 0)
     {
-        mPosY = 0;
+        mHitbox.y = 0;
     }
-    else if (mPosY + mHeight > levelHeight)
+    else if (mHitbox.y + mHitbox.h > levelHeight)
     {
-        mPosY = levelHeight - mHeight;
+        mHitbox.y = levelHeight - mHitbox.h;
+    }
+}
+void Player::correctForTilesX(const std::vector<Tile> &tiles)
+{
+    SDL_Rect tileHB;
+    for (Tile t : tiles)
+    {
+        if (t.getWalkThrough())
+            continue;
+
+        tileHB = t.getHitbox();
+        if (!areColliding(mHitbox, tileHB))
+            continue;
+
+        if (mVelX > 0)
+            mHitbox.x = tileHB.x - mHitbox.w;
+
+        else if (mVelX < 0)
+            mHitbox.x = tileHB.x + tileHB.w;
+
+        mVelX = 0;
+        return;
+    }
+}
+void Player::correctForTilesY(const std::vector<Tile> &tiles)
+{
+    SDL_Rect tileHB;
+    for (Tile t : tiles)
+    {
+        if (t.getWalkThrough())
+            continue;
+
+        tileHB = t.getHitbox();
+        if (!areColliding(mHitbox, tileHB))
+            continue;
+
+        if (mVelY > 0)
+            mHitbox.y = tileHB.y - mHitbox.h;
+
+        else if (mVelY < 0)
+            mHitbox.y = tileHB.y + tileHB.h;
+
+        mVelY = 0;
+        return;
     }
 }

@@ -1,5 +1,7 @@
 #!/usr/bin/env	bash
 
+# Katki. Vaja korda teha.
+
 set -e # Exit on error
 set -x # Track commands
 

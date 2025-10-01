@@ -46,14 +46,14 @@ bool Texture::loadTextureFromSurface(const char *pathToImage, SDL_Surface *surfa
     }
     return true;
 }
-void Texture::render(SDL_Renderer *renderer, int x, int y, SDL_Rect *clip, double angle, SDL_Point *center, SDL_RendererFlip flip)
+void Texture::render(SDL_Renderer *renderer, int x, int y, SDL_Rect *clip, int scale, double angle, SDL_Point *center, SDL_RendererFlip flip)
 {
-    SDL_Rect textureClip = {x, y, mTextureWidth, mTextureHeight};
-    if (clip != NULL)
+    SDL_Rect textureClip = {x, y, mTextureWidth * scale, mTextureHeight * scale};
+    /*if (clip != NULL)
     {
         textureClip.w = clip->w;
         textureClip.h = clip->h;
-    }
+    }*/
     SDL_RenderCopyEx(renderer, mTexture, clip, &textureClip, angle, center, flip);
 }
 void Texture::close(int *logLevel, int *messageDepth)

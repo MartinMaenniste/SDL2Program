@@ -1,17 +1,19 @@
+3840
+2160
 1280
 720
 32
+2
 60
 100
-3840
-2160
 
 
-1: Default window width
-2: Default window height
-3: Tile sidelength
-4: Player width
-5: Player height
-Start with default level. Dimensions of the level:
-6: Level width
-7: Level height
+
+1: Level width
+2: Level height
+3: Default window width
+4: Default window height
+5: Tile sidelength
+6: Player width
+7: Player height
+8 Start with default level.
