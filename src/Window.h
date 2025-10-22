@@ -8,8 +8,8 @@ public:
     Window();
     ~Window();
 
-    bool init(int *logLevel, int *messageDepth, int defaultWindowWidth, int defaultWindowHeight);
-    void close(int *logLevel, int *messageDepth);
+    bool init(const int *logLevel, int *messageDepth, const int defaultWindowWidth, const int defaultWindowHeight);
+    void close(const int *logLevel, int *messageDepth);
     SDL_Renderer *getRenderer();
     int getWidth();
     int getHeight();
@@ -19,7 +19,7 @@ private:
     SDL_Renderer *mRenderer;
     int mWindowWidth, mWindowHeight;
 
-    bool createWindow(int *logLevel, int *messageDepth);
-    bool createRenderer(int *logLevel, int *messageDepth);
-    bool initialisePNGLoading(int *logLevel, int *messageDepth);
+    bool createWindow(const int *logLevel, int *messageDepth);
+    bool createRenderer(const int *logLevel, int *messageDepth);
+    bool initialisePNGLoading(const int *logLevel, int *messageDepth);
 };

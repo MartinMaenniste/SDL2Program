@@ -1,30 +1,32 @@
 #pragma once
 
 #include "Window.h"
-#include "Texture.h"
 #include "Tile.h"
 
-class Window;
-class Texture;
+class Inventory;
+class OnGroundItemHandler;
+class Item;
 
 class Player
 {
 public:
     Player();
-    Player(int startX, int startY, int width, int height);
+    Player(const int startX, const int startY, const int width, const int height);
     ~Player();
 
-    bool loadAssets(SDL_Renderer *renderer, int *logLevel, int *messageDepth);
-    void handleEvents(SDL_Event &event);
-    void move(int &levelWidth, int &levelHeight, const std::vector<Tile> &tiles, int tileTexSize);
-    void render(std::unique_ptr<Window> &window, int cameraX, int cameraY);
-    void close(int *logLevel, int *messageDepth);
+    bool loadAssets(SDL_Renderer *renderer, const int *logLevel, int *messageDepth, const int windowWidth, const int windowHeight, const int maxInvSlots);
+    void handleEvents(const SDL_Event &event, std::unique_ptr<OnGroundItemHandler> &groundItems);
+    void move(const int &levelWidth, const int &levelHeight, const std::vector<Tile> &tiles, const int tileTexSize);
+    void render(SDL_Renderer *renderer, const int cameraX, const int cameraY);
+    void close(const int *logLevel, int *messageDepth);
     int getXPosition();
     int getYPosition();
     int getWidth();
     int getHeight();
-    void setXPosition(int xPosition);
-    void setYPosition(int yPosition);
+    SDL_Rect getHitbox();
+    // void setXPosition(const int xPosition);
+    // void setYPosition(const int yPosition);
+    void addItemToInventory(std::unique_ptr<Item> &item);
 
 private:
     std::unique_ptr<Texture> mTexture;
@@ -34,14 +36,15 @@ private:
     int mXMotion, mYMotion;
     int mPlayerSpeedMAX;
     int mPlayerAcceleration;
+    std::unique_ptr<Inventory> mInventory;
 
     void updateVelocity();
     void updateXVelocity();
     void updateYVelocity();
-    int acceleratePlayer(int velocity, int direction);
+    int acceleratePlayer(int velocity, const int direction);
     int deceleratePlayer(int velocity);
-    void updatePos(int &levelWidth, int &levelHeight, const std::vector<Tile> &tiles);
-    void correctForLevel(int &levelWidth, int &levelHeight);
+    void updatePos(const int &levelWidth, const int &levelHeight, const std::vector<Tile> &tiles);
+    void correctForLevel(const int &levelWidth, const int &levelHeight);
     void correctForTilesX(const std::vector<Tile> &tiles);
     void correctForTilesY(const std::vector<Tile> &tiles);
 };

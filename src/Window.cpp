@@ -10,7 +10,7 @@ Window::Window()
 Window::~Window()
 {
 }
-bool Window::init(int *logLevel, int *messageDepth, int defaultWindowWidth, int defaultWindowHeight)
+bool Window::init(const int *logLevel, int *messageDepth, const int defaultWindowWidth, const int defaultWindowHeight)
 {
     mWindowWidth = defaultWindowWidth;
     mWindowHeight = defaultWindowHeight;
@@ -32,27 +32,27 @@ bool Window::init(int *logLevel, int *messageDepth, int defaultWindowWidth, int 
 
     return true;
 }
-void Window::close(int *logLevel, int *messageDepth)
+void Window::close(const int *logLevel, int *messageDepth)
 {
-    printInfo(logLevel, messageDepth, "Destroying renderer...\n");
+    Global::printInfo(logLevel, messageDepth, "Destroying renderer...\n");
     SDL_DestroyRenderer(mRenderer);
-    printInfo(logLevel, messageDepth, "Renderer destroyed.\n");
-    printInfo(logLevel, messageDepth, "Destroying window...\n");
+    Global::printInfo(logLevel, messageDepth, "Renderer destroyed.\n");
+    Global::printInfo(logLevel, messageDepth, "Destroying window...\n");
     SDL_DestroyWindow(mWindow);
-    printInfo(logLevel, messageDepth, "Window destroyed.\n");
+    Global::printInfo(logLevel, messageDepth, "Window destroyed.\n");
 }
 SDL_Renderer *Window::getRenderer() { return mRenderer; }
 int Window::getWidth() { return mWindowWidth; }
 int Window::getHeight() { return mWindowHeight; }
 
-bool Window::createWindow(int *logLevel, int *messageDepth)
+bool Window::createWindow(const int *logLevel, int *messageDepth)
 {
-    printInfo(logLevel, messageDepth, "Creating window...\n");
+    Global::printInfo(logLevel, messageDepth, "Creating window...\n");
     (*messageDepth)++;
     mWindow = SDL_CreateWindow("Program", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, mWindowWidth, mWindowHeight, SDL_WINDOW_SHOWN);
     if (mWindow == NULL)
     {
-        printDebug(logLevel, messageDepth, "Window could not be created: ");
+        Global::printDebug(logLevel, messageDepth, "Window could not be created: ");
         if ((*logLevel) > 0)
         {
             printf("%s\n", SDL_GetError());
@@ -60,17 +60,17 @@ bool Window::createWindow(int *logLevel, int *messageDepth)
         return false;
     }
     (*messageDepth)--;
-    printInfo(logLevel, messageDepth, "Window created.\n");
+    Global::printInfo(logLevel, messageDepth, "Window created.\n");
     return true;
 }
-bool Window::createRenderer(int *logLevel, int *messageDepth)
+bool Window::createRenderer(const int *logLevel, int *messageDepth)
 {
-    printInfo(logLevel, messageDepth, "Creating renderer for the window...\n");
+    Global::printInfo(logLevel, messageDepth, "Creating renderer for the window...\n");
     (*messageDepth)++;
     mRenderer = SDL_CreateRenderer(mWindow, -1, SDL_RENDERER_ACCELERATED);
     if (mRenderer == NULL)
     {
-        printDebug(logLevel, messageDepth, "Failed to create renderer: ");
+        Global::printDebug(logLevel, messageDepth, "Failed to create renderer: ");
         if ((*logLevel) > 0)
         {
             printf("%s\n", SDL_GetError());
@@ -79,18 +79,18 @@ bool Window::createRenderer(int *logLevel, int *messageDepth)
     }
     SDL_SetRenderDrawColor(mRenderer, 255, 255, 255, 255);
     (*messageDepth)--;
-    printInfo(logLevel, messageDepth, "Renderer created. Drawcolour initialised to white.\n");
+    Global::printInfo(logLevel, messageDepth, "Renderer created. Drawcolour initialised to white.\n");
 
     return true;
 }
-bool Window::initialisePNGLoading(int *logLevel, int *messageDepth)
+bool Window::initialisePNGLoading(const int *logLevel, int *messageDepth)
 {
-    printInfo(logLevel, messageDepth, "Initialising PNG loading...\n");
+    Global::printInfo(logLevel, messageDepth, "Initialising PNG loading...\n");
     (*messageDepth)++;
     int imgFlags = IMG_INIT_PNG;
     if (!(IMG_Init(imgFlags) & imgFlags))
     {
-        printDebug(logLevel, messageDepth, "Failed to initialise PNG loading: ");
+        Global::printDebug(logLevel, messageDepth, "Failed to initialise PNG loading: ");
         if ((*logLevel) > 0)
         {
             printf("%s\n", IMG_GetError());
@@ -98,7 +98,7 @@ bool Window::initialisePNGLoading(int *logLevel, int *messageDepth)
         return false;
     }
     (*messageDepth)--;
-    printInfo(logLevel, messageDepth, "PNG loading initialised.\n");
+    Global::printInfo(logLevel, messageDepth, "PNG loading initialised.\n");
 
     return true;
 }

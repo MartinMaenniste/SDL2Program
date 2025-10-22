@@ -1,4 +1,5 @@
 #include "Player.h"
+#include "Inventory.h"
 
 Player::Player()
 {
@@ -6,36 +7,38 @@ Player::Player()
     mPlayerSpeedMAX = 0;
     mPlayerAcceleration = 0;
     mTexture = std::make_unique<Texture>();
+    mInventory = std::make_unique<Inventory>();
     mHitbox = {0, 0, 0, 0};
 }
-Player::Player(int startX, int startY, int width, int height)
+Player::Player(const int startX, const int startY, const int width, const int height)
 {
     mTexture = NULL;
     mHitbox = {startX, startY, width, height};
-    mPlayerSpeedMAX = 10; // TODO - make a better system
+    mPlayerSpeedMAX = 7; // TODO - make a better system
     mPlayerAcceleration = 1;
     mVelX = 0;
     mVelY = 0;
     mXMotion = 0;
     mYMotion = 0;
     mTexture = std::make_unique<Texture>();
+    mInventory = std::make_unique<Inventory>();
 }
 Player::~Player()
 {
 }
-bool Player::loadAssets(SDL_Renderer *renderer, int *logLevel, int *messageDepth)
+bool Player::loadAssets(SDL_Renderer *renderer, const int *logLevel, int *messageDepth, const int windowWidth, const int windowHeight, const int maxInvSlots)
 {
-    printInfo(logLevel, messageDepth, "Initialising player...\n");
+    Global::printInfo(logLevel, messageDepth, "Initialising player...\n");
     (*messageDepth)++;
 
-    // Since I want to be the background colour of the sprite transparent, load it to surface first and when pixel manipulation is over, then to texture.
-    printInfo(logLevel, messageDepth, "Making player surface...\n");
+    // Since I want to be the background colour of the sprite transparent, load it to surface first and when pixel manipulation is over, then convert to texture.
+    Global::printInfo(logLevel, messageDepth, "Making player surface...\n");
     (*messageDepth)++;
     SDL_Surface *imageSurface = IMG_Load(mImagePath);
     SDL_SetColorKey(imageSurface, SDL_TRUE, SDL_MapRGB(imageSurface->format, 1, 255, 1));
     if (imageSurface == NULL)
     {
-        printDebug(logLevel, messageDepth, "Could not make player surface: ");
+        Global::printDebug(logLevel, messageDepth, "Could not make player surface: ");
         if ((*logLevel) > 0)
         {
             printf("%s\n", IMG_GetError());
@@ -43,27 +46,31 @@ bool Player::loadAssets(SDL_Renderer *renderer, int *logLevel, int *messageDepth
         return false;
     }
     (*messageDepth)--;
-    printInfo(logLevel, messageDepth, "Player surface made.\n");
+    Global::printInfo(logLevel, messageDepth, "Player surface made.\n");
 
-    printInfo(logLevel, messageDepth, "Making player texture...\n");
+    Global::printInfo(logLevel, messageDepth, "Making player texture...\n");
     (*messageDepth)++;
     mTexture->loadTextureFromSurface(mImagePath, imageSurface, renderer, mHitbox.w, mHitbox.h, logLevel, messageDepth);
     if (mTexture == NULL)
     {
-        printDebug(logLevel, messageDepth, "Failed to create player texture.\n");
+        Global::printDebug(logLevel, messageDepth, "Failed to create player texture.\n");
         return false;
     }
     (*messageDepth)--;
-    printInfo(logLevel, messageDepth, "Player texture made.\n");
+    Global::printInfo(logLevel, messageDepth, "Player texture made.\n");
     (*messageDepth)--;
 
     SDL_FreeSurface(imageSurface);
     imageSurface = nullptr;
 
-    printInfo(logLevel, messageDepth, "Player initialised.\n");
+    Global::printInfo(logLevel, messageDepth, "Making inventory for player...\n");
+    mInventory->init(renderer, windowWidth, windowHeight, logLevel, messageDepth, maxInvSlots);
+    Global::printInfo(logLevel, messageDepth, "Inventory created.\n");
+
+    Global::printInfo(logLevel, messageDepth, "Player initialised.\n");
     return true;
 }
-void Player::handleEvents(SDL_Event &event)
+void Player::handleEvents(const SDL_Event &event, std::unique_ptr<OnGroundItemHandler> &groundItems)
 {
     if (event.type == SDL_KEYDOWN && event.key.repeat == 0)
     {
@@ -107,28 +114,31 @@ void Player::handleEvents(SDL_Event &event)
             break;
         }
     }
+    mInventory->handleEvent(event, groundItems, mHitbox);
 }
-void Player::move(int &levelWidth, int &levelHeight, const std::vector<Tile> &tiles, int tileTexSize)
+void Player::move(const int &levelWidth, const int &levelHeight, const std::vector<Tile> &tiles, const int tileTexSize)
 {
     updateVelocity();
     updatePos(levelWidth, levelHeight, tiles);
 }
-void Player::render(std::unique_ptr<Window> &window, int cameraX, int cameraY)
+void Player::render(SDL_Renderer *renderer, const int cameraX, const int cameraY)
 {
-    mTexture->render(window->getRenderer(), mHitbox.x - cameraX, mHitbox.y - cameraY);
+    mTexture->render(renderer, mHitbox.x - cameraX, mHitbox.y - cameraY);
+    mInventory->render(renderer);
 }
-void Player::close(int *logLevel, int *messageDepth)
+void Player::close(const int *logLevel, int *messageDepth)
 {
-    printInfo(logLevel, messageDepth, "Closing player...\n");
+    Global::printInfo(logLevel, messageDepth, "Closing player...\n");
     (*messageDepth)++;
     mTexture->close(logLevel, messageDepth);
     (*messageDepth)--;
-    printInfo(logLevel, messageDepth, "Player closed.\n");
+    Global::printInfo(logLevel, messageDepth, "Player closed.\n");
 }
 int Player::getXPosition() { return mHitbox.x; }
 int Player::getYPosition() { return mHitbox.y; }
 int Player::getWidth() { return mHitbox.w; }
 int Player::getHeight() { return mHitbox.h; }
+SDL_Rect Player::getHitbox() { return mHitbox; }
 
 void Player::updateVelocity()
 {
@@ -185,7 +195,7 @@ void Player::updateYVelocity()
         mVelY = -1 * mPlayerSpeedMAX;
     }
 }
-int Player::acceleratePlayer(int velocity, int direction)
+int Player::acceleratePlayer(int velocity, const int direction)
 {
     velocity += direction * mPlayerAcceleration;
     return velocity;
@@ -199,7 +209,7 @@ int Player::deceleratePlayer(int velocity)
 
     return velocity;
 }
-void Player::updatePos(int &levelWidth, int &levelHeight, const std::vector<Tile> &tiles)
+void Player::updatePos(const int &levelWidth, const int &levelHeight, const std::vector<Tile> &tiles)
 {
     // Check if moving x makes a collision with tiles, check if moving y makes a collision with tiles.
     // For both of them, snap to the tile, then skip (or recursion if there is an odd case.)
@@ -212,7 +222,7 @@ void Player::updatePos(int &levelWidth, int &levelHeight, const std::vector<Tile
 
     correctForLevel(levelWidth, levelHeight);
 }
-void Player::correctForLevel(int &levelWidth, int &levelHeight)
+void Player::correctForLevel(const int &levelWidth, const int &levelHeight)
 {
     if (mHitbox.x < 0)
     {
@@ -241,7 +251,7 @@ void Player::correctForTilesX(const std::vector<Tile> &tiles)
             continue;
 
         tileHB = t.getHitbox();
-        if (!areColliding(mHitbox, tileHB))
+        if (!Global::areColliding(mHitbox, tileHB))
             continue;
 
         if (mVelX > 0)
@@ -263,7 +273,7 @@ void Player::correctForTilesY(const std::vector<Tile> &tiles)
             continue;
 
         tileHB = t.getHitbox();
-        if (!areColliding(mHitbox, tileHB))
+        if (!Global::areColliding(mHitbox, tileHB))
             continue;
 
         if (mVelY > 0)
@@ -275,4 +285,8 @@ void Player::correctForTilesY(const std::vector<Tile> &tiles)
         mVelY = 0;
         return;
     }
+}
+void Player::addItemToInventory(std::unique_ptr<Item> &item)
+{
+    mInventory->addItem(item);
 }

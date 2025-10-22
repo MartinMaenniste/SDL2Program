@@ -25,22 +25,22 @@ void GameController::startApplication()
 
 bool GameController::initGame()
 {
-    printInfo(&mLogLevel, &mMessageDepth, "Initialising program...\n");
+    Global::printInfo(&mLogLevel, &mMessageDepth, "Initialising program...\n");
     mMessageDepth++;
     if (!mGame.init(&mLogLevel, &mMessageDepth))
     {
-        printDebug(&mLogLevel, &mMessageDepth, "Failed to init!\nQuitting program.\n");
+        Global::printDebug(&mLogLevel, &mMessageDepth, "Failed to init!\nQuitting program.\n");
 
         return false;
     }
     mMessageDepth--;
-    printInfo(&mLogLevel, &mMessageDepth, "Program initialised.\n");
+    Global::printInfo(&mLogLevel, &mMessageDepth, "Program initialised.\n");
     return true;
 }
 void GameController::startGame()
 {
     mGame.start(); // This only sets the Game class internally to a state where it tells that it's running. (isRunning is set to true)
-    printInfo(&mLogLevel, &mMessageDepth, "Game started!\n");
+    Global::printInfo(&mLogLevel, &mMessageDepth, "Game started!\n");
 
     Uint64 frameStartTime = 0;
     Uint64 frameEndTime = 0;
@@ -76,12 +76,12 @@ void GameController::startGame()
         }
         totalFrames++;
         averageFPS = totalFrames / (runningTime / 1000.0f);
-        // No font system made yet, can't yet display.
+        // No font system made yet, can't yet display fps.
     }
 }
 void GameController::closeGame()
 {
-    printDebug(&mLogLevel, &mMessageDepth, "Quitting program...\n"); // If program didn't crash, but something ended game loop unexpectedly - debug rather than just info
+    Global::printDebug(&mLogLevel, &mMessageDepth, "Quitting program...\n"); // If program didn't crash, but something ended game loop unexpectedly - debug rather than just info
     mMessageDepth++;
     mGame.close(&mLogLevel, &mMessageDepth);
     mMessageDepth--;

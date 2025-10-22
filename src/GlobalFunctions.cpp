@@ -1,36 +1,36 @@
 #include "GlobalFunctions.h"
 
-void printCharNTimes(int *n, const char *c)
+void Global::printCharNTimes(const int *n, const char *c)
 {
     for (int i = 0; i < (*n); i++)
     {
         printf(c);
     }
 }
-void printDebug(int *logLevel, int *messageDepth, const char *message)
+void Global::printDebug(const int *logLevel, const int *messageDepth, const char *message)
 {
     if ((*logLevel) > 0)
     {
-        printCharNTimes(messageDepth, "==");
+        Global::printCharNTimes(messageDepth, "==");
         printf("> ");
         printf(message);
     }
 }
-void printInfo(int *logLevel, int *messageDepth, const char *message)
+void Global::printInfo(const int *logLevel, const int *messageDepth, const char *message)
 {
 
     if ((*logLevel) > 1)
     {
-        printCharNTimes(messageDepth, "==");
+        Global::printCharNTimes(messageDepth, "==");
         printf("> ");
         printf(message);
     }
 }
-bool areColliding(SDL_Rect &first, SDL_Rect &second)
+bool Global::areColliding(const SDL_Rect &first, const SDL_Rect &second)
 {
-    return areCollidingX(first, second) && areCollidingY(first, second);
+    return Global::areCollidingX(first, second) && Global::areCollidingY(first, second);
 }
-bool areCollidingX(SDL_Rect &first, SDL_Rect &second)
+bool Global::areCollidingX(const SDL_Rect &first, const SDL_Rect &second)
 {
     // first.left has to be smaller than second.right  - first is somewhere to the left of second
     // &&
@@ -39,7 +39,11 @@ bool areCollidingX(SDL_Rect &first, SDL_Rect &second)
 
     return (first.x < second.x + second.w && first.x + first.w > second.x);
 }
-bool areCollidingY(SDL_Rect &first, SDL_Rect &second)
+bool Global::areCollidingY(const SDL_Rect &first, const SDL_Rect &second)
 {
     return (first.y < second.y + second.h && first.y + first.h > second.y);
+}
+bool Global::isInRect(const int x, const int y, const SDL_Rect &rect)
+{
+    return (x >= rect.x && x < rect.x + rect.w && y >= rect.y && y < rect.y + rect.h);
 }
