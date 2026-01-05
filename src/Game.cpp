@@ -1,6 +1,5 @@
 #include "Game.h"
 #include "Window.h"
-#include "Tile.h"
 #include "Player.h"
 #include "Texture.h"
 #include "OnGroundItemHandler.h"
@@ -14,7 +13,7 @@ Game::Game()
     mCamera = Camera();
     mLevel = Level();
     mTiles = Tiles();
-    mStylesheetTex = std::make_unique<Texture>();
+    mTileStylesheetTex = std::make_unique<Texture>();
     mItemHandler = std::make_unique<OnGroundItemHandler>();
 }
 Game::~Game()
@@ -263,7 +262,7 @@ bool Game::loadTileStylesheet(const int sideLength, const int *const logLevel, i
 {
     Global::printInfo(logLevel, messageDepth, "Loading tiles stylesheet...\n");
     (*messageDepth)++;
-    if (!mStylesheetTex->loadTextureFromPath(mTileSheetPath, mWindow->getRenderer(), sideLength, sideLength, logLevel, messageDepth))
+    if (!mTileStylesheetTex->loadTextureFromPath(mTileSheetPath, mWindow->getRenderer(), sideLength, sideLength, logLevel, messageDepth))
     {
         Global::printDebug(logLevel, messageDepth, "Failed to load stylesheet for tiles.\n");
         return false;
@@ -316,7 +315,7 @@ void Game::renderTiles()
 {
     for (Tile t : mTiles.tiles)
     {
-        t.render(mWindow->getRenderer(), mCamera.cameraRect, mStylesheetTex, mTiles.scale);
+        t.render(mWindow->getRenderer(), mCamera.cameraRect, mTileStylesheetTex, mTiles.scale);
     }
 }
 void Game::addTileByType(const int tileType, const int indexInVector, const int posX, const int posY)

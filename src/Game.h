@@ -53,7 +53,7 @@ private:
     std::unique_ptr<Player> mPlayer;
     Camera mCamera;
     Level mLevel;
-    std::unique_ptr<Texture> mStylesheetTex;
+    std::unique_ptr<Texture> mTileStylesheetTex;
     Tiles mTiles;
     std::unique_ptr<OnGroundItemHandler> mItemHandler;
 
