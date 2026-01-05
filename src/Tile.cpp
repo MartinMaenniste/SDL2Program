@@ -23,8 +23,8 @@ void Tile::setValues(const int stylesheetX, const int stylesheetY, const int sid
 
     mHitbox.x = posX;
     mHitbox.y = posY;
-    mHitbox.w = mStylesheetRect.w;
-    mHitbox.h = mStylesheetRect.h;
+    mHitbox.w = mStylesheetRect.w * scale;
+    mHitbox.h = mStylesheetRect.h * scale;
 }
 bool Tile::getWalkThrough() { return mCanWalkThrough; }
 SDL_Rect Tile::getHitbox() { return mHitbox; }
