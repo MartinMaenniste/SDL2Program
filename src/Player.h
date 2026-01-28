@@ -6,6 +6,7 @@
 class Inventory;
 class OnGroundItemHandler;
 class Item;
+class Interactable;
 
 class Player
 {
@@ -16,7 +17,7 @@ public:
 
     bool loadAssets(SDL_Renderer *renderer, const int *logLevel, int *messageDepth, const int windowWidth, const int windowHeight, const int maxInvSlots);
     void handleEvents(const SDL_Event &event, std::unique_ptr<OnGroundItemHandler> &groundItems);
-    void move(const int &levelWidth, const int &levelHeight, const std::vector<Tile> &tiles, const int tileTexSize);
+    void move(const int &levelWidth, const int &levelHeight, const std::vector<Tile> &tiles, const int tileTexSize, const std::vector<std::unique_ptr<Interactable>> &interactables);
     void render(SDL_Renderer *renderer, const int cameraX, const int cameraY);
     void close(const int *logLevel, int *messageDepth);
     int getXPosition();
@@ -43,8 +44,8 @@ private:
     void updateYVelocity();
     int acceleratePlayer(int velocity, const int direction);
     int deceleratePlayer(int velocity);
-    void updatePos(const int &levelWidth, const int &levelHeight, const std::vector<Tile> &tiles);
+    void updatePos(const int &levelWidth, const int &levelHeight, const std::vector<Tile> &tiles, const std::vector<std::unique_ptr<Interactable>> &interactables);
     void correctForLevel(const int &levelWidth, const int &levelHeight);
-    void correctForTilesX(const std::vector<Tile> &tiles);
-    void correctForTilesY(const std::vector<Tile> &tiles);
+    void correctForImmovablesX(const std::vector<Tile> &tiles, const std::vector<std::unique_ptr<Interactable>> &interactables);
+    void correctForImmovablesY(const std::vector<Tile> &tiles, const std::vector<std::unique_ptr<Interactable>> &interactables);
 };

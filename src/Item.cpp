@@ -1,5 +1,7 @@
 #include "Item.h"
 
+#include "Texture.h"
+
 Item::Item()
 {
     mTextureSheet = std::make_unique<Texture>();
@@ -36,5 +38,5 @@ SDL_Rect Item::getHitBox() { return mHitbox; }
 
 bool Item::loadTexture(SDL_Renderer *renderer, const int *logLevel, int *messageDepth)
 {
-    return mTextureSheet->loadTextureFromPath(mImagePath, renderer, mHitbox.w, mHitbox.h, logLevel, messageDepth);
+    return mTextureSheet->loadTexture(mImagePath, renderer, mHitbox.w, mHitbox.h, logLevel, messageDepth);
 }

@@ -3,6 +3,7 @@
 #include "Player.h"
 #include "Texture.h"
 #include "OnGroundItemHandler.h"
+#include "Interactable.h"
 
 Game::Game()
 {
@@ -63,16 +64,29 @@ void Game::handleEvents(const SDL_Event &event)
 }
 void Game::updatePositions()
 {
-    mPlayer->move(mLevel.levelWidth, mLevel.levelHeight, mTiles.tiles, mTiles.sideLength * mTiles.scale);
+    mPlayer->move(mLevel.levelWidth, mLevel.levelHeight, mTiles.tiles, mTiles.sideLength * mTiles.scale, mInteractableObjects);
     mCamera.updatePosition(mWindow, mPlayer);
     mCamera.keepCameraInBounds(mLevel.levelWidth, mLevel.levelHeight, mWindow);
+    
+    for(auto iter = mInteractableObjects.begin(); iter != mInteractableObjects.end(); iter++)
+    {
+        (*iter)->update(mPlayer->getHitbox());
+    }
 }
 void Game::render()
 {
     SDL_RenderClear(mWindow->getRenderer());
+    
     renderTiles();
     mItemHandler->render(mWindow->getRenderer(), mCamera.cameraRect);
+
     mPlayer->render(mWindow->getRenderer(), mCamera.cameraRect.x, mCamera.cameraRect.y);
+
+    for(auto iter = mInteractableObjects.begin(); iter != mInteractableObjects.end(); iter++)
+    {
+        (*iter)->render(mWindow->getRenderer(), mCamera.cameraRect);
+    }
+
     SDL_RenderPresent(mWindow->getRenderer());
 }
 
@@ -153,43 +167,47 @@ bool Game::makeClassVariables(const int *const logLevel, int *const messageDepth
     (*messageDepth)--;
     Global::printInfo(logLevel, messageDepth, "Closing configuration file... ");
     file.close();
+
+    Global::printInfo(logLevel, messageDepth, "Making items and interactables...\n");
+    (*messageDepth)++;
+
+    mItemHandler->addNewItemOnGround(logLevel, messageDepth, mWindow->getRenderer(), 2300, 1200);
+    mItemHandler->addNewItemOnGround(logLevel, messageDepth, mWindow->getRenderer(), 2300, 1200);
+    mItemHandler->addNewItemOnGround(logLevel, messageDepth, mWindow->getRenderer(), 2300, 1200);
+    mItemHandler->addNewItemOnGround(logLevel, messageDepth, mWindow->getRenderer(), 2300, 1200);
+    mItemHandler->addNewItemOnGround(logLevel, messageDepth, mWindow->getRenderer(), 2300, 1200);
+    mItemHandler->addNewItemOnGround(logLevel, messageDepth, mWindow->getRenderer(), 2300, 1200);
+    mItemHandler->addNewItemOnGround(logLevel, messageDepth, mWindow->getRenderer(), 2300, 1200);
+    mItemHandler->addNewItemOnGround(logLevel, messageDepth, mWindow->getRenderer(), 2300, 1200);
+    mItemHandler->addNewItemOnGround(logLevel, messageDepth, mWindow->getRenderer(), 2300, 1200);
+    mItemHandler->addNewItemOnGround(logLevel, messageDepth, mWindow->getRenderer(), 2300, 1200);
+    mItemHandler->addNewItemOnGround(logLevel, messageDepth, mWindow->getRenderer(), 2300, 1200);
+    mItemHandler->addNewItemOnGround(logLevel, messageDepth, mWindow->getRenderer(), 2300, 1200);
+    mItemHandler->addNewItemOnGround(logLevel, messageDepth, mWindow->getRenderer(), 2300, 1200);
+    mItemHandler->addNewItemOnGround(logLevel, messageDepth, mWindow->getRenderer(), 2300, 1200);
+    mItemHandler->addNewItemOnGround(logLevel, messageDepth, mWindow->getRenderer(), 2300, 1200);
+    mItemHandler->addNewItemOnGround(logLevel, messageDepth, mWindow->getRenderer(), 2300, 1200);
+    mItemHandler->addNewItemOnGround(logLevel, messageDepth, mWindow->getRenderer(), 2300, 1200);
+    mItemHandler->addNewItemOnGround(logLevel, messageDepth, mWindow->getRenderer(), 2300, 1200);
+    mItemHandler->addNewItemOnGround(logLevel, messageDepth, mWindow->getRenderer(), 2300, 1200);
+    mItemHandler->addNewItemOnGround(logLevel, messageDepth, mWindow->getRenderer(), 2300, 1200);
+    mItemHandler->addNewItemOnGround(logLevel, messageDepth, mWindow->getRenderer(), 2300, 1200);
+    mItemHandler->addNewItemOnGround(logLevel, messageDepth, mWindow->getRenderer(), 2300, 1200);
+    mItemHandler->addNewItemOnGround(logLevel, messageDepth, mWindow->getRenderer(), 2300, 1200);
+    mItemHandler->addNewItemOnGround(logLevel, messageDepth, mWindow->getRenderer(), 2300, 1200);
+    mItemHandler->addNewItemOnGround(logLevel, messageDepth, mWindow->getRenderer(), 2300, 1200);
+
+    Global::printInfo(logLevel, messageDepth, "Items made.\n");
+    Global::printInfo(logLevel, messageDepth, "Making interactables\n");
+
+    std::unique_ptr<Interactable> interactable = std::make_unique<Interactable>();
+    interactable->init(mWindow->getRenderer(), 2000, 900, logLevel, messageDepth);
+    mInteractableObjects.push_back(std::move(interactable));
+    
+    (*messageDepth)--;
+    Global::printInfo(logLevel, messageDepth, "Interactables made.\n");
+
     Global::printInfo(logLevel, messageDepth, "Success.\n");
-
-    mItemHandler->addNewItemOnGround(logLevel, messageDepth, mWindow->getRenderer(), 2300, 1200);
-    mItemHandler->addNewItemOnGround(logLevel, messageDepth, mWindow->getRenderer(), 2300, 1200);
-    mItemHandler->addNewItemOnGround(logLevel, messageDepth, mWindow->getRenderer(), 2300, 1200);
-    mItemHandler->addNewItemOnGround(logLevel, messageDepth, mWindow->getRenderer(), 2300, 1200);
-    mItemHandler->addNewItemOnGround(logLevel, messageDepth, mWindow->getRenderer(), 2300, 1200);
-    mItemHandler->addNewItemOnGround(logLevel, messageDepth, mWindow->getRenderer(), 2300, 1200);
-    mItemHandler->addNewItemOnGround(logLevel, messageDepth, mWindow->getRenderer(), 2300, 1200);
-    mItemHandler->addNewItemOnGround(logLevel, messageDepth, mWindow->getRenderer(), 2300, 1200);
-    mItemHandler->addNewItemOnGround(logLevel, messageDepth, mWindow->getRenderer(), 2300, 1200);
-    mItemHandler->addNewItemOnGround(logLevel, messageDepth, mWindow->getRenderer(), 2300, 1200);
-    mItemHandler->addNewItemOnGround(logLevel, messageDepth, mWindow->getRenderer(), 2300, 1200);
-    mItemHandler->addNewItemOnGround(logLevel, messageDepth, mWindow->getRenderer(), 2300, 1200);
-    mItemHandler->addNewItemOnGround(logLevel, messageDepth, mWindow->getRenderer(), 2300, 1200);
-    mItemHandler->addNewItemOnGround(logLevel, messageDepth, mWindow->getRenderer(), 2300, 1200);
-    mItemHandler->addNewItemOnGround(logLevel, messageDepth, mWindow->getRenderer(), 2300, 1200);
-    mItemHandler->addNewItemOnGround(logLevel, messageDepth, mWindow->getRenderer(), 2300, 1200);
-    mItemHandler->addNewItemOnGround(logLevel, messageDepth, mWindow->getRenderer(), 2300, 1200);
-    mItemHandler->addNewItemOnGround(logLevel, messageDepth, mWindow->getRenderer(), 2300, 1200);
-    mItemHandler->addNewItemOnGround(logLevel, messageDepth, mWindow->getRenderer(), 2300, 1200);
-    mItemHandler->addNewItemOnGround(logLevel, messageDepth, mWindow->getRenderer(), 2300, 1200);
-    mItemHandler->addNewItemOnGround(logLevel, messageDepth, mWindow->getRenderer(), 2300, 1200);
-    mItemHandler->addNewItemOnGround(logLevel, messageDepth, mWindow->getRenderer(), 2300, 1200);
-    mItemHandler->addNewItemOnGround(logLevel, messageDepth, mWindow->getRenderer(), 2300, 1200);
-    mItemHandler->addNewItemOnGround(logLevel, messageDepth, mWindow->getRenderer(), 2300, 1200);
-    mItemHandler->addNewItemOnGround(logLevel, messageDepth, mWindow->getRenderer(), 2300, 1200);
-
-    /*mItemHandler->addNewItemOnGround(logLevel, messageDepth, mWindow->getRenderer(), 2300, 900);
-    mItemHandler->addNewItemOnGround(logLevel, messageDepth, mWindow->getRenderer(), 2300, 1000);
-    mItemHandler->addNewItemOnGround(logLevel, messageDepth, mWindow->getRenderer(), 2300, 1100);
-    mItemHandler->addNewItemOnGround(logLevel, messageDepth, mWindow->getRenderer(), 2300, 1200);
-    mItemHandler->addNewItemOnGround(logLevel, messageDepth, mWindow->getRenderer(), 2300, 1300);
-    mItemHandler->addNewItemOnGround(logLevel, messageDepth, mWindow->getRenderer(), 2300, 1400);
-    mItemHandler->addNewItemOnGround(logLevel, messageDepth, mWindow->getRenderer(), 2300, 1500);
-    mItemHandler->addNewItemOnGround(logLevel, messageDepth, mWindow->getRenderer(), 2300, 1600);*/
-
 
     return true;
 }
@@ -262,7 +280,7 @@ bool Game::loadTileStylesheet(const int sideLength, const int *const logLevel, i
 {
     Global::printInfo(logLevel, messageDepth, "Loading tiles stylesheet...\n");
     (*messageDepth)++;
-    if (!mTileStylesheetTex->loadTextureFromPath(mTileSheetPath, mWindow->getRenderer(), sideLength, sideLength, logLevel, messageDepth))
+    if (!mTileStylesheetTex->loadTexture(mTileSheetPath, mWindow->getRenderer(), sideLength, sideLength, logLevel, messageDepth))
     {
         Global::printDebug(logLevel, messageDepth, "Failed to load stylesheet for tiles.\n");
         return false;
@@ -335,7 +353,7 @@ void Game::addTileByType(const int tileType, const int indexInVector, const int 
     }
     else
     {
-        printf("Unknown tile type: %d\n", tileType);
+        std::printf("\n*****\nERROR:\nUnknown tile type: %d\n*****\n\n", tileType);
         throw -1;
     }
 

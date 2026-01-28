@@ -1,12 +1,14 @@
 #pragma once
 
 #include "GlobalFunctions.h"
+#include <set>
 
 class Window;
 class Tile;
 class Player;
 class Texture;
 class OnGroundItemHandler;
+class Interactable;
 
 struct Camera
 {
@@ -56,6 +58,7 @@ private:
     std::unique_ptr<Texture> mTileStylesheetTex;
     Tiles mTiles;
     std::unique_ptr<OnGroundItemHandler> mItemHandler;
+    std::vector<std::unique_ptr<Interactable>> mInteractableObjects;
 
     bool makeClassVariables(const int *const logLevel, int *const messageDepth);
     int getNextInt(std::ifstream &inputFileStream);

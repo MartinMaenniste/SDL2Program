@@ -1,6 +1,8 @@
 #pragma once
 
-#include "Texture.h"
+//#include "Texture.h"
+#include "GlobalFunctions.h"
+class Texture;
 
 class Item
 {

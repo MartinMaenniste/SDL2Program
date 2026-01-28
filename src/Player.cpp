@@ -1,5 +1,6 @@
 #include "Player.h"
 #include "Inventory.h"
+#include "Interactable.h"
 
 Player::Player()
 {
@@ -30,38 +31,7 @@ bool Player::loadAssets(SDL_Renderer *renderer, const int *logLevel, int *messag
 {
     Global::printInfo(logLevel, messageDepth, "Initialising player...\n");
     (*messageDepth)++;
-
-    // Since I want to be the background colour of the sprite transparent, load it to surface first and when pixel manipulation is over, then convert to texture.
-    Global::printInfo(logLevel, messageDepth, "Making player surface...\n");
-    (*messageDepth)++;
-    SDL_Surface *imageSurface = IMG_Load(mImagePath);
-    SDL_SetColorKey(imageSurface, SDL_TRUE, SDL_MapRGB(imageSurface->format, 1, 255, 1));
-    if (imageSurface == NULL)
-    {
-        Global::printDebug(logLevel, messageDepth, "Could not make player surface: ");
-        if ((*logLevel) > 0)
-        {
-            printf("%s\n", IMG_GetError());
-        }
-        return false;
-    }
-    (*messageDepth)--;
-    Global::printInfo(logLevel, messageDepth, "Player surface made.\n");
-
-    Global::printInfo(logLevel, messageDepth, "Making player texture...\n");
-    (*messageDepth)++;
-    mTexture->loadTextureFromSurface(mImagePath, imageSurface, renderer, mHitbox.w, mHitbox.h, logLevel, messageDepth);
-    if (mTexture == NULL)
-    {
-        Global::printDebug(logLevel, messageDepth, "Failed to create player texture.\n");
-        return false;
-    }
-    (*messageDepth)--;
-    Global::printInfo(logLevel, messageDepth, "Player texture made.\n");
-    (*messageDepth)--;
-
-    SDL_FreeSurface(imageSurface);
-    imageSurface = nullptr;
+    mTexture->loadTexture(mImagePath, renderer, mHitbox.w, mHitbox.h, logLevel, messageDepth);
 
     Global::printInfo(logLevel, messageDepth, "Making inventory for player...\n");
     mInventory->init(renderer, windowWidth, windowHeight, logLevel, messageDepth, maxInvSlots);
@@ -116,10 +86,10 @@ void Player::handleEvents(const SDL_Event &event, std::unique_ptr<OnGroundItemHa
     }
     mInventory->handleEvent(event, groundItems, mHitbox);
 }
-void Player::move(const int &levelWidth, const int &levelHeight, const std::vector<Tile> &tiles, const int tileTexSize)
+void Player::move(const int &levelWidth, const int &levelHeight, const std::vector<Tile> &tiles, const int tileTexSize, const std::vector<std::unique_ptr<Interactable>> &interactables)
 {
     updateVelocity();
-    updatePos(levelWidth, levelHeight, tiles);
+    updatePos(levelWidth, levelHeight, tiles, interactables);
 }
 void Player::render(SDL_Renderer *renderer, const int cameraX, const int cameraY)
 {
@@ -209,16 +179,16 @@ int Player::deceleratePlayer(int velocity)
 
     return velocity;
 }
-void Player::updatePos(const int &levelWidth, const int &levelHeight, const std::vector<Tile> &tiles)
+void Player::updatePos(const int &levelWidth, const int &levelHeight, const std::vector<Tile> &tiles, const std::vector<std::unique_ptr<Interactable>> &interactables)
 {
     // Check if moving x makes a collision with tiles, check if moving y makes a collision with tiles.
     // For both of them, snap to the tile, then skip (or recursion if there is an odd case.)
     // After that, correctforlevel.
 
     mHitbox.x += mVelX;
-    correctForTilesX(tiles);
+    correctForImmovablesX(tiles, interactables);
     mHitbox.y += mVelY;
-    correctForTilesY(tiles);
+    correctForImmovablesY(tiles, interactables);
 
     correctForLevel(levelWidth, levelHeight);
 }
@@ -242,7 +212,7 @@ void Player::correctForLevel(const int &levelWidth, const int &levelHeight)
         mHitbox.y = levelHeight - mHitbox.h;
     }
 }
-void Player::correctForTilesX(const std::vector<Tile> &tiles)
+void Player::correctForImmovablesX(const std::vector<Tile> &tiles, const std::vector<std::unique_ptr<Interactable>> &interactables)
 {
     SDL_Rect tileHB;
     for (Tile t : tiles)
@@ -263,8 +233,26 @@ void Player::correctForTilesX(const std::vector<Tile> &tiles)
         mVelX = 0;
         return;
     }
+    SDL_Rect immovableHB;
+    for (auto iter = interactables.begin(); iter != interactables.end(); iter++)
+    {
+        if((*iter)->getCanWalkThrough())
+            continue;
+        immovableHB = (*iter)->getHitbox();
+        if (!Global::areColliding(mHitbox, immovableHB))
+            continue;
+
+        if (mVelX > 0)
+            mHitbox.x = immovableHB.x - mHitbox.w;
+
+        else if (mVelX < 0)
+            mHitbox.x = immovableHB.x + immovableHB.w;
+
+        mVelX = 0;
+        return;
+    }
 }
-void Player::correctForTilesY(const std::vector<Tile> &tiles)
+void Player::correctForImmovablesY(const std::vector<Tile> &tiles, const std::vector<std::unique_ptr<Interactable>> &interactables)
 {
     SDL_Rect tileHB;
     for (Tile t : tiles)
@@ -281,6 +269,25 @@ void Player::correctForTilesY(const std::vector<Tile> &tiles)
 
         else if (mVelY < 0)
             mHitbox.y = tileHB.y + tileHB.h;
+
+        mVelY = 0;
+        return;
+    }
+    SDL_Rect immovableHB;
+    for (auto iter = interactables.begin(); iter != interactables.end(); iter++)
+    {
+        if ((*iter)->getCanWalkThrough())
+            continue;
+
+        immovableHB = (*iter)->getHitbox();
+        if (!Global::areColliding(mHitbox, immovableHB))
+            continue;
+
+        if (mVelY > 0)
+            mHitbox.y = immovableHB.y - mHitbox.h;
+
+        else if (mVelY < 0)
+            mHitbox.y = immovableHB.y + immovableHB.h;
 
         mVelY = 0;
         return;

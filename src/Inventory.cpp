@@ -105,7 +105,7 @@ std::unique_ptr<Item> Inventory::removeItem(int slot)
 
 bool Inventory::loadTexture(SDL_Renderer *renderer, const int *logLevel, int *messageDepth)
 {
-    return mTexture->loadTextureFromPath(mImagePath, renderer, mHitbox.w, mHitbox.h, logLevel, messageDepth);
+    return mTexture->loadTexture(mImagePath, renderer, mHitbox.w, mHitbox.h, logLevel, messageDepth);
 }
 
 void Inventory::renderItems(SDL_Renderer *renderer)
